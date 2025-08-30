@@ -1,0 +1,35 @@
+# DEFININDO O UNIVERSO RASA
+
+version: "3.1"
+intents:
+  - saudacao
+  - despedida
+  - consultar_aviso
+  - consultar_data_prova
+
+
+entities:
+  - disciplina
+
+
+# definindo respostas prontas que o bot pode dar
+responses:
+  utter_saudacao:
+  - text: "Olá! Sou o assistente acadêmico. Como posso te ajudar?"
+
+  utter_despedida:
+  - text: "Até mais!"
+
+  utter_ask_disciplina:
+  - text: "Claro! Para qual disciplina você gostaria de saber a data?"
+
+  utter_default:
+  - text: "Desculpe, não entendi. Pode tentar reformular a pergunta?"
+
+#Ações customizadas que o bot pode executar
+actions:
+  - action_buscar_ultimos_avisos
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

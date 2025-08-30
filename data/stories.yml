@@ -1,0 +1,17 @@
+# ARQUIVO PARA ORGANIZA OS ROTEIROS
+
+version: "3.1"
+
+stories:
+
+- story: Caminho feliz de saudação e despedida
+  steps:
+  - intent: saudacao
+  - action: utter_saudacao
+  - intent: despedida
+  - action: utter_despedida
+
+- story: Usuário pergunta sobre aviso
+  steps:
+  - intent: consultar_aviso
+  - action: action_buscar_ultimos_avisos # Chama a ação customizada

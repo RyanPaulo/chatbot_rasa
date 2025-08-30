@@ -1,0 +1,37 @@
+#  ONDE TREINAMOS O RASA A ENTENDER O QUE O USUARIO RETORNA PARA ELE
+
+version: "3.1"
+
+nlu:
+- intent: saudacao
+  examples: |
+    - oi
+    - oiee
+    - oiiie
+    - olá
+    - bom dia
+    - boa tarde
+    - boa noite
+    - e ai
+
+
+- intent: despedida
+  examples: |
+    - tchau
+    - adues
+    - até logo
+
+- intent: consultar_aviso
+  examples: |
+    - tem algum aviso novo?
+    - quais são os ultimos avisos
+    - ver os avisos da faculdade
+    - me mostra os avisos
+    
+
+- intent: consultar_data_prova
+  examples: |
+    - quando é a prova de [cálculo]{"entity": "Disciplina"}?
+    - qual a data da prova [banco de dados]{"entity": "Disciplina"}?
+    - me diz quando vai ser a prova
+    - quero saber da prova de [Sistemas Distribuidos]{"entity": "Disciplina"}?
