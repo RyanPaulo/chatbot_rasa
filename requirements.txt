@@ -1,0 +1,15 @@
+# Arquivo: requirements.txt
+
+rasa==3.6.21
+
+# Dependências para a API e Supabase
+fastapi
+uvicorn[standard]
+supabase
+python-dotenv
+
+# Dependências do Rasa que precisam de versão fixa para evitar conflitos
+pydantic<2.0
+protobuf==4.23.3
+async-timeout==4.0.2
+aiohttp==3.9.0

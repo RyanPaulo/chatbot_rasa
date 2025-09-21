@@ -1,0 +1,42 @@
+UNIP – Tatuapé  
+Ciência da Computação / Sistemas de Informação 
+Engenharia de Software: Métricas de Software 
+COCOMO 81 - (COnstructive COst MOdel) – Modelo Construtivo de Custo 
+É um método que busca medir esforço, prazo, tamanho de equipe e custo necessário 
+para o desenvolvimento do software, desde que se tenha a dimensão do mesmo, ou seja, 
+pelo modelo de estimativa de tamanho de software com base histórica ou através do 
+cálculo obtido pelo APF (Análise de Ponto de Função). 
+O modelo CoCoMo foi proposto por BARRY BOEHM (1981), tendo sido construído e 
+calibrado inicialmente a partir de informação de, em torno de 83, projetos concluídos. 
+Sua utilização tem permitido estimativas com um erro inferior a 20% em cerca de 70% 
+dos projetos. 
+O CoCoMo 81 considera três modos de desenvolvimento: 
+ Modo Orgânico: é usado para calcular o esforço para um projeto onde as restrições 
+de desenvolvimento são ligeiras; aplicável a ambientes de desenvolvimento estáveis, 
+com pouca inovação e a projetos com equipes de dimensão relativamente pequena; 
+ Modo Semidestacado: é usado para um projeto em que as restrições sobre o  
+projeto são superiores ao modo orgânico, mas resta ainda alguma flexibilidade; 
+aplicável a projetos com características entre o modo orgânico e o embutido; 
+ Modo Embutido: é usado para um projeto que tem limitações definidas com muito 
+rigor. O projeto como um todo é um pioneiro e, portanto, não pode confiar em 
+projetos anteriores concluídos; aplicável no desenvolvimento de sistemas complexos 
+embutidos em hardware, com muita inovação, com restrições severas e/ou com 
+requisitos muito voláteis. 
+O CoCoMo considera ainda três "estágios" do modelo, à medida que vai sendo 
+introduzido mais detalhamento: 
+ Modelo Básico: É um modelo estático de valor simples que computa o esforço e o 
+custo de desenvolvimento de software como uma função do tamanho de programa 
+expresso em linhas de código estimadas. 
+ Modelo Intermediário: A fase seguinte de sofisticação do modelo; corresponde a 
+considerar a influência de um conjunto de vários fatores, relativos quer ao sistema a 
+produzir (produto) propriamente dito, quer ao suporte computacional (tecnologia 
+utilizada), fator humano e organização do processo de desenvolvimento de software. 
+A influência destes fatores, em número de 15 no modelo originalmente proposto, 
+deve ser avaliada numa escala discreta e ponderada. 
+ Modelo Avançado: Na sua versão mais completa, o modelo CoCoMo introduz 
+aspectos adicionais como a decomposição de um sistema de grande dimensão em 
+subsistemas. Outros aspectos correspondem à distribuição das estimativas de 
+esforço e de prazo por fase e por atividade e à influência diferenciada de cada fator 
+influenciador do custo por fase, ou seja, é a aplicação do COCOMO intermediário 
+para cada fase do projeto. 
+Prof. Marcelo Nogueira

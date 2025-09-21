@@ -1,4 +1,5 @@
-# DEFININDO O UNIVERSO RASA
+### DEFININDO O UNIVERSO RASA ###
+## AQUI NOS DEFINE AS INTENÇÕES DE AÇÃO DO RASA ##
 
 version: "3.1"
 intents:
@@ -6,6 +7,8 @@ intents:
   - despedida
   - consultar_aviso
   - consultar_data_prova
+  - consultar_cronograma
+
 
 
 entities:
@@ -26,9 +29,10 @@ responses:
   utter_default:
   - text: "Desculpe, não entendi. Pode tentar reformular a pergunta?"
 
-#Ações customizadas que o bot pode executar
+# Ações customizadas que o bot pode executar
 actions:
   - action_buscar_ultimos_avisos
+  - action_buscar_cronograma
 
 session_config:
   session_expiration_time: 60

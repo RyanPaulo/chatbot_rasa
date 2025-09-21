@@ -1,4 +1,5 @@
-#  ONDE TREINAMOS O RASA A ENTENDER O QUE O USUARIO RETORNA PARA ELE
+### ONDE TREINAMOS O RASA A ENTENDER O QUE O USUARIO RETORNA PARA ELE ###
+## AQUI DEVEMOS ESPRESAR PARA O RASA A INTENÇÃO DO USUARIO ##
 
 version: "3.1"
 
@@ -13,7 +14,6 @@ nlu:
     - boa tarde
     - boa noite
     - e ai
-
 
 - intent: despedida
   examples: |
@@ -35,3 +35,11 @@ nlu:
     - qual a data da prova [banco de dados]{"entity": "Disciplina"}?
     - me diz quando vai ser a prova
     - quero saber da prova de [Sistemas Distribuidos]{"entity": "Disciplina"}?
+
+- intent: consultar_cronograma
+  examples: |
+    - qual o cronograma de [cálculo]{"entity": "disciplina"}?
+    - me mostra os horários de [banco de dados]{"entity": "disciplina"}
+    - quero saber as aulas de [Sistemas Distribuidos]{"entity": "disciplina"}
+    - cronograma da matéria [programação orientada a objetos]{"entity": "disciplina"}
+    - quais os dias de aula de [redes de computadores]{"entity": "disciplina"}?
