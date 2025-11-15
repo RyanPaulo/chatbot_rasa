@@ -4,43 +4,379 @@
 version: "3.1"
 
 nlu:
-- intent: saudacao
+#================================================================
+# INTENÇÕES CONVERSACIONAIS E META
+#================================================================
+- intent: saudar
   examples: |
-    - start
     - oi
-    - oiee
-    - oiiie
-    - olá
     - bom dia
-    - boa tarde
-    - boa noite
-    - e ai
+    - e aí
+    - olá
+    - oiee
+    - tudo bem?
 
-- intent: despedida
+- intent: despedir
   examples: |
     - tchau
-    - adues
-    - até logo
+    - até mais
+    - flw
+    - adeus
 
+- intent: agradecer
+  examples: |
+    - obrigado
+    - valeu
+    - ajudou muito
+    - obrigada
+    - vlw
+
+- intent: afirmar
+  examples: |
+    - sim
+    - isso
+    - ok
+    - s
+    - isso mesmo
+    - claro
+    - por favor
+    - confirmo
+
+- intent: negar
+  examples: |
+    - não
+    - n
+    - errado
+    - de jeito nenhum
+    - deixa pra lá
+    - cancelar
+
+- intent: bot_challenge
+  examples: |
+    - você é um robô?
+    - estou falando com uma pessoa?
+    - você é uma ia?
+    - quem é vc?
+
+- intent: solicitar_ajuda
+  examples: |
+    - o que você faz?
+    - como você pode me ajudar?
+    - me ajuda
+    - o que eu posso te perguntar?
+
+#================================================================
+# INTENÇÕES DE INFORMAÇÃO PEDAGÓGICA (DÚVIDAS PEDAGÓGICAS)
+#================================================================
+- intent: solicitar_conteudo_prova
+  examples: |
+    - o que vai cair na [NP1]{"entity": "tipo_avaliacao"} de [arquitetura de software]{"entity": "disciplina"}?
+    - qual a matéria da prova de [SD]{"entity": "disciplina"}?
+    - me fala os tópicos do [exame]{"entity": "tipo_avaliacao"} de [clp]{"entity": "disciplina"}
+    - o que eu tenho que estudar pra prova de [Engenharia de Software]{"entity": "disciplina"}?
+    - qual o conteúdo da [sub]{"entity": "tipo_avaliacao"}?
+
+- intent: solicitar_material_aula
+  examples: |
+    - pode me enviar os [slides]{"entity": "tipo_material"} da aula de [Sistemas Distribuídos]{"entity": "disciplina"}?
+    - onde acho o [pdf]{"entity": "tipo_material"} da aula 5?
+    - o professor subiu o material da aula de hoje?
+    - tem os [slides]{"entity": "tipo_material"} da última aula de [grafos]{"entity": "disciplina"}?
+    - o professor disponibilizou a aula?
+
+- intent: solicitar_material_complementar
+  examples: |
+    - tem algum [artigo]{"entity": "tipo_material"} sobre Big-O?
+    - quais as [leituras recomendadas]{"entity": "tipo_material"} para [IA]{"entity": "disciplina"}?
+    - o professor indicou algum [vídeo]{"entity": "tipo_material"} sobre o assunto da última aula?
+    - tem material complementar de [SD]{"entity": "disciplina"}?
+
+# --- INTENÇÃO DE AVISO (MANTIDA DO SEU ARQUIVO ORIGINAL) ---
 - intent: consultar_aviso
   examples: |
+    - a aula de [análise de algoritmos]{"entity": "disciplina"} foi cancelada?
+    - teve algum aviso sobre a [entrega do trabalho]{"entity": "prazo_tipo"}?
+    - o professor falou alguma coisa sobre a aula de hoje?
+    - algum recado de [Engenharia de Software]{"entity": "disciplina"}?
     - tem algum aviso novo?
     - quais são os ultimos avisos
     - ver os avisos da faculdade
     - me mostra os avisos
-    
 
-- intent: consultar_data_prova
+#================================================================
+# INTENÇÕES ACADÊMICAS E INSTITUCIONAIS (DÚVIDAS ACADÊMICAS)
+#================================================================
+- intent: consultar_data_avaliacao
   examples: |
-    - quando é a prova de [cálculo]{"entity": "Disciplina"}?
-    - qual a data da prova [banco de dados]{"entity": "Disciplina"}?
-    - me diz quando vai ser a prova
-    - quero saber da prova de [Sistemas Distribuidos]{"entity": "Disciplina"}?
+    - quando é a [np2]{"entity": "tipo_avaliacao"} de [engenharia de software]{"entity": "disciplina"}?
+    - qual a data de [entrega da APS]{"entity": "prazo_tipo"}?
+    - até quando posso entregar o [TCC]{"entity": "prazo_tipo"}?
+    - quando será a prova [substitutiva]{"entity": "tipo_avaliacao"}?
+    - qual o prazo da [APS]{"entity": "prazo_tipo"}?
 
-- intent: consultar_cronograma
+- intent: consultar_horario_aula
   examples: |
-    - qual o cronograma de [cálculo]{"entity": "disciplina"}?
-    - me mostra os horários de [banco de dados]{"entity": "disciplina"}
-    - quero saber as aulas de [Sistemas Distribuidos]{"entity": "disciplina"}
-    - cronograma da matéria [programação orientada a objetos]{"entity": "disciplina"}
-    - quais os dias de aula de [redes de computadores]{"entity": "disciplina"}?
+    - que horas é a aula de [banco de dados]{"entity": "disciplina"}?
+    - qual a sala da aula de hoje?
+    - hoje tem aula de que?
+    - onde é a aula de [SD]{"entity": "disciplina"}?
+
+- intent: solicitar_info_docente
+  examples: |
+    - qual é o [email]{"entity": "info_docente"} da coordenadora?
+    - qual a [sala]{"entity": "info_docente"} da coordenação?
+    - onde fica a [sala]{"entity": "info_docente"} da [Eliane]{"entity": "nome_docente"}?
+    - qual o [horário de atendimento]{"entity": "info_docente"} da coordenadora [Eliane]{"entity": "nome_docente"}?
+    - como eu falo com a coordenadora?
+    - [email]{"entity": "info_docente"} da coordenação de Ciência da Computação
+    - quando a [Eliane Santiago]{"entity": "nome_docente"} está na faculdade?
+    - qual o [horário]{"entity": "info_docente"} da [Eliane]{"entity": "nome_docente"}?
+    - [contato]{"entity": "info_docente"} da coordenadora
+    - qual o [horário de atendimento]{"entity": "info_docente"} do professor [Alvaro]{"entity": "nome_docente"}?
+    - qual o [email]{"entity": "info_docente"} da [Eliane]{"entity": "nome_docente"}?
+    - como falo com o professor [Hugo Insua]{"entity": "nome_docente"}?
+    - qual o [email]{"entity": "info_docente"} do professor de [redes]{"entity": "disciplina"}?
+    - qual a [sala]{"entity": "info_docente"} do [José Zesinho]{"entity": "nome_docente"}?
+
+
+- intent: solicitar_info_atividade_academica
+  examples: |
+    - como funcionam as [horas complementares]{"entity": "atividade_academica"}?
+    - qual a [carga horária do estágio]{"entity": "atividade_academica"}?
+    - quais são as [regras do TCC]{"entity": "atividade_academica"}?
+    - tem [manual da APS]{"entity": "atividade_academica"}?
+
+#================================================================
+# DICIONÁRIOS (Lookup Tables)
+#================================================================
+
+- lookup: disciplina
+  examples: |
+    - Qualidade de Software
+    - Compiladores e Computabilidade
+    - Desenvolvimento de Sistemas Distribuídos
+    - Empreendedorismo
+    - Compiladores e Computabilidade
+    - Análise de Algoritmos
+    - Sistemas Distribuídos
+    - Engenharia de Software
+    - Circuitos Lógicos Digitais
+    - Banco de Dados
+    - Inteligência Artificial
+    - Redes de Computadores
+    - Grafos
+    - ClP
+    - Arquitetura de Software
+    - Fisica para Computação
+    - Noçoes de Direito
+    - Fundamentos de Realidade Aumentada
+    - Ciencia da Computação Integrada
+    - Legislação Computacional 
+    - Administração 
+    - Gestão de Projetos
+
+
+- lookup: tipo_avaliacao
+  examples: |
+    - NP1
+    - NP2
+    - np1
+    - np2
+    - exame
+    - substitutiva
+    - sub
+
+- lookup: nome_docente
+  examples: |
+    - Myriam Moraes
+    - Myriam
+    - Álvaro Prado
+    - Alvaro
+    - Álvaro
+    - Luiz Magrini
+    - Magrini
+    - Arthur Battaglia
+    - Hugo Insua
+    - Luiz Gobitta
+    - Saulo
+    - Eliane Santiago
+    - Eliane
+
+- lookup: atividade_academica
+  examples: |
+    - horas complementares
+    - estágio
+    - regras do estágio
+    - carga horária do estágio
+    - TCC
+    - entrega do TCC
+    - regras do TCC
+    - APS
+    - entrega da APS
+    - manual da APS
+
+- lookup: tipo_material
+  examples: |
+    - slides
+    - slide
+    - artigo
+    - pdf
+    - vídeo
+    - leitura
+    - leituras recomendadas
+    - link
+
+- lookup: info_docente
+  examples: |
+    - horário de atendimento
+    - email
+    - e-mail
+    - sala
+    - contato
+
+- lookup: prazo_tipo
+  examples: |
+    - entrega
+    - inscrição
+    - prazo final
+    - entrega da APS
+    - entrega do TCC
+    - entrega do trabalho
+
+#================================================================
+# SINÔNIMOS (Apelidos)
+#================================================================
+
+# --- COORDENADORA: Eliane Santiago ---
+- synonym: Eliane Santiago
+  examples: |
+    - Eliane
+    - prof Eliane
+    - Professora Eliane
+    - coordenadora
+    - coordenadora do curso
+    - coordenação
+    - coordenadora Eliane
+
+# --- DISCIPLINA: Sistemas Distribuídos ---
+- synonym: Sistemas Distribuídos
+  examples: |
+    - SD
+    - sd
+    - sistemas distribuidos
+    - distribuidos
+    - Desenvolvimento de Sistemas Distribuídos
+    - desenvolvimento de sistemas distribuidos
+
+# --- DISCIPLINA: Engenharia de Software ---
+- synonym: Engenharia de Software
+  examples: |
+    - ES
+    - es
+    - engenharia de software
+    - engenharia
+    - eng de software
+    - eng. de software
+
+# --- DISCIPLINA: Circuitos Lógicos Digitais ---
+- synonym: Circuitos Lógicos Digitais
+  examples: |
+    - CLD
+    - cld
+    - circuitos logicos
+    - circuitos
+
+# --- DISCIPLINA: Banco de Dados ---
+- synonym: Banco de Dados
+  examples: |
+    - BD
+    - bd
+    - banco
+    - banco de dados
+    - database
+
+# --- DISCIPLINA: Inteligência Artificial ---
+- synonym: Inteligência Artificial
+  examples: |
+    - IA
+    - ia
+    - inteligencia artificial
+
+# --- DISCIPLINA: Análise de Algoritmos ---
+- synonym: Análise de Algoritmos
+  examples: |
+    - analise de algoritmos
+    - algoritmos
+    - analise
+
+# --- DISCIPLINA: Qualidade de Software ---
+- synonym: Qualidade de Software
+  examples: |
+    - QS
+    - qs
+    - qualidade de software
+    - qualidade
+
+# --- DISCIPLINA: Redes de Computadores ---
+- synonym: Redes de Computadores
+  examples: |
+    - Redes
+    - redes
+    - redes de computadores
+
+# --- PROFESSOR: Álvaro Prado ---
+- synonym: Álvaro Prado
+  examples: |
+    - Alvaro
+    - prof Alvaro
+    - Professor Álvaro
+
+# --- PROFESSOR: Myriam Moraes ---
+- synonym: Myriam Moraes
+  examples: |
+    - Myriam
+    - Myrian
+    - prof Myriam
+    - Professora Myriam
+
+# --- PROFESSOR: Hugo Insua ---
+- synonym: Hugo Insua
+  examples: |
+    - Hugo
+    - Insua
+    - prof Hugo
+
+# --- AVALIAÇÃO: APS ---
+- synonym: APS
+  examples: |
+    - aps
+    - Atividades Práticas Supervisionadas
+    - entrega da aps
+
+# --- AVALIAÇÃO: TCC ---
+- synonym: TCC
+  examples: |
+    - tcc
+    - Trabalho de Conclusão de Curso
+    - entrega do tcc
+
+# --- AVALIAÇÃO: NP1 / NP2 ---
+- synonym: NP1
+  examples: |
+    - np1
+    - Np1
+    - prova 1
+    - prova primeiro período
+    - primeira prova
+    - P1
+    - p1
+
+- synonym: NP2
+  examples: |
+    - np2
+    - Np2
+    - prova 2
+    - prova segundo período
+    - segunda prova
+    - P2
+    - p2

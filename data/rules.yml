@@ -1,13 +1,33 @@
-#version: "3.1"
-#
-#rules:
-#
-#- rule: Say goodbye anytime the user says goodbye
-#  steps:
-#  - intent: goodbye
-#  - action: utter_goodbye
-#
-#- rule: Say 'I am a bot' anytime the user challenges
-#  steps:
-#  - intent: bot_challenge
-#  - action: utter_iamabot
+version: "3.1"
+
+rules:
+
+- rule: Dizer oi sempre que o usuário der saudação
+  # Esta regra garante que o bot SEMPRE responda a uma saudação.
+  steps:
+  - intent: saudar
+  - action: utter_saudacao  # Esta é a resposta que está no domain.yml
+
+- rule: Dizer tchau sempre que o usuário se despedir
+  # Esta regra garante que o bot SEMPRE se despeça.
+  steps:
+  - intent: despedir
+  - action: utter_despedida
+
+- rule: Responder a agradecimento
+  # Esta regra garante que o bot SEMPRE responda a um "obrigado".
+  steps:
+  - intent: agradecer
+  - action: utter_agradecer
+
+- rule: Responder quem é o bot
+  # Esta regra é para a intenção "bot_challenge"
+  steps:
+  - intent: bot_challenge
+  - action: utter_iamabot
+
+- rule: Explicar o que o bot faz
+  # Esta regra é para a intenção "solicitar_ajuda"
+  steps:
+  - intent: solicitar_ajuda
+  - action: utter_ajuda

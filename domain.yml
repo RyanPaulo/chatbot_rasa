@@ -2,37 +2,71 @@
 ## AQUI NOS DEFINE AS INTENÇÕES DE AÇÃO DO RASA ##
 
 version: "3.1"
+
 intents:
-  - saudacao
-  - despedida
-  - consultar_aviso
-  - consultar_data_prova
-  - consultar_cronograma
-
-
+  # Intenções Conversacionais
+  - saudar
+  - despedir
+  - agradecer
+  - afirmar
+  - negar
+  - bot_challenge
+  - solicitar_ajuda
+  # Intenções Pedagógicas
+  - solicitar_conteudo_prova
+  - solicitar_material_aula
+  - solicitar_material_complementar
+  - consultar_aviso  
+  # Intenções Acadêmicas
+  - consultar_data_avaliacao
+  - consultar_horario_aula
+  - solicitar_info_docente
+  - solicitar_info_atividade_academica
 
 entities:
   - disciplina
+  - tipo_avaliacao
+  - tipo_material
+  - prazo_tipo
+  - info_docente
+  - nome_docente
+  - atividade_academica
 
-
-# definindo respostas prontas que o bot pode dar
+# Respostas prontas (Utterances)
 responses:
   utter_saudacao:
-  - text: "Olá! Sou o assistente acadêmico. Como posso te ajudar?"
+  - text: "Olá! Sou seu assistente acadêmico. Como posso te ajudar?"
 
   utter_despedida:
-  - text: "Até mais!"
+  - text: "Até mais! Se precisar de algo, é só chamar."
+  
+  utter_agradecer:
+  - text: "De nada! Fico feliz em ajudar."
 
-  utter_ask_disciplina:
-  - text: "Claro! Para qual disciplina você gostaria de saber a data?"
+  utter_iamabot:
+  - text: "Eu sou um assistente virtual (um bot) treinado para responder suas dúvidas acadêmicas!"
+
+  utter_ajuda:
+  - text: "Eu posso ajudar com:\n- Datas de provas e prazos (NP1, NP2, APS...)\n- Conteúdo de avaliações\n- Materiais de aula (slides, PDFs)\n- Horários e salas de aula\n- Informações sobre professores e atividades como TCC e estágio."
 
   utter_default:
   - text: "Desculpe, não entendi. Pode tentar reformular a pergunta?"
 
-# Ações customizadas que o bot pode executar
+# Ações customizadas 
 actions:
+  # Ação que já está funcionando
   - action_buscar_ultimos_avisos
-  - action_buscar_cronograma
+  
+  # Ação do cronograma
+  - action_buscar_cronograma 
+  
+  # Ação genérica do Gemini (para todas as perguntas de conteúdo)
+  - action_gerar_resposta_com_ia
+  
+  # Ações de dados estruturados
+  - action_buscar_data_avaliacao
+  - action_buscar_info_docente
+  - action_buscar_info_atividade_academica
 
 session_config:
   session_expiration_time: 60

@@ -1,5 +1,6 @@
 # Ambientes virtuais (os mais importantes de ignorar)
-.venv/
+venv/
+venv
 .venv-linux/
 .venv_watcher/
 
