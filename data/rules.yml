@@ -2,32 +2,109 @@ version: "3.1"
 
 rules:
 
-- rule: Dizer oi sempre que o usuário der saudação
-  # Esta regra garante que o bot SEMPRE responda a uma saudação.
+- rule: Responder saudacao
   steps:
   - intent: saudar
-  - action: utter_saudacao  # Esta é a resposta que está no domain.yml
+  - action: utter_saudacao
 
-- rule: Dizer tchau sempre que o usuário se despedir
-  # Esta regra garante que o bot SEMPRE se despeça.
+- rule: Responder despedida
   steps:
   - intent: despedir
   - action: utter_despedida
 
-- rule: Responder a agradecimento
-  # Esta regra garante que o bot SEMPRE responda a um "obrigado".
+- rule: Responder agradecimento
   steps:
   - intent: agradecer
   - action: utter_agradecer
 
-- rule: Responder quem é o bot
-  # Esta regra é para a intenção "bot_challenge"
+- rule: Responder quem e o bot
   steps:
   - intent: bot_challenge
   - action: utter_iamabot
 
 - rule: Explicar o que o bot faz
-  # Esta regra é para a intenção "solicitar_ajuda"
   steps:
   - intent: solicitar_ajuda
   - action: utter_ajuda
+
+- rule: Ativar IA para conteudo
+  steps:
+  - intent: perguntar_conteudo_ia
+  - action: action_gerar_resposta_com_ia
+
+- rule: Consultar Avisos
+  steps:
+  - intent: consultar_aviso
+  - action: action_buscar_ultimos_avisos
+
+- rule: Consultar APS
+  steps:
+  - intent: consultar_regras_aps
+  - action: action_buscar_info_atividade_academica
+
+- rule: Consultar TCC
+  steps:
+  - intent: consultar_regras_tcc
+  - action: action_buscar_info_atividade_academica
+
+- rule: Consultar Estagio
+  steps:
+  - intent: consultar_estagio
+  - action: action_buscar_info_atividade_academica
+
+- rule: Consultar Horas Complementares
+  steps:
+  - intent: consultar_horas_complementares
+  - action: action_buscar_info_atividade_academica
+
+# --- FORMULARIO DE ATENDIMENTO ---
+- rule: Ativar formulario de atendimento se o nome faltar
+  steps:
+  - intent: solicitar_atendimento_docente
+  - slot_was_set:
+    - nome_docente: null
+  - action: utter_ask_nome_docente # Pergunta o nome
+  - action: form_atendimento_docente
+  - active_loop: form_atendimento_docente
+
+- rule: Enviar formulario de atendimento quando o slot for preenchido
+  condition:
+  - active_loop: form_atendimento_docente # Se o form estiver ativo
+  - slot_was_set:
+    - nome_docente: true # E o slot 'nome_docente' for preenchido (pelo 'from_text')
+  steps:
+  - action: form_atendimento_docente # Preenche o formulario
+  - active_loop: null # Desativa o formulario
+  - action: action_buscar_atendimento_docente # Roda a acao
+
+# --- CORRECOES DE WARNINGS ---
+# SUBSTITUA ESTA REGRA:
+# - rule: Buscar material de aula
+#   steps:
+#   - intent: solicitar_material_aula
+#   - action: action_buscar_material
+
+# POR ESTAS DUAS:
+- rule: Ativar formulario de material se a disciplina faltar
+  steps:
+  - intent: solicitar_material_aula
+  - slot_was_set:
+    - disciplina: null
+  - action: utter_ask_disciplina # Pergunta a disciplina
+  - action: form_buscar_material
+  - active_loop: form_buscar_material
+
+- rule: Enviar formulario de material quando o slot for preenchido
+  condition:
+  - active_loop: form_buscar_material # Se o form estiver ativo
+  - slot_was_set:
+    - disciplina: true # E o slot 'disciplina' for preenchido
+  steps:
+  - action: form_buscar_material # Preenche o formulario
+  - active_loop: null # Desativa o formulario
+  - action: action_buscar_material # Roda a acao
+
+- rule: Acionar fallback padrao quando nao entender
+  steps:
+  - intent: nlu_fallback
+  - action: utter_default

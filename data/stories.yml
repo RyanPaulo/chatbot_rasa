@@ -1,47 +1,29 @@
-# ARQUIVO PARA ORGANIZA OS ROTEIROS
-
 version: "3.1"
 
 stories:
-- story: Usuário pede avisos
+- story: Usuario pede avisos
   steps:
   - intent: consultar_aviso
   - action: action_buscar_ultimos_avisos
 
-- story: Usuário pede data de prova
+- story: Usuario pede data de prova
   steps:
   - intent: consultar_data_avaliacao
   - action: action_buscar_data_avaliacao
 
-- story: Usuário pede horário de aula
+- story: Usuario pede horario de aula
   steps:
   - intent: consultar_horario_aula
   - action: action_buscar_cronograma
 
-- story: Usuário pede info de professor
+- story: Usuario pede info de professor (email)
   steps:
   - intent: solicitar_info_docente
   - action: action_buscar_info_docente
 
-- story: Usuário pede info de atividade acadêmica
-  steps:
-  - intent: solicitar_info_atividade_academica
-  - action: action_buscar_info_atividade_academica
+# A HISTORIA CONFLITANTE FOI REMOVIDA DAQUI
 
-# === HISTÓRIAS DO GEMINI ===
-# Todas as perguntas de "conteúdo" vão para a mesma ação de IA
-
-- story: Usuário pede conteúdo de prova (chama IA)
+- story: Usuario pede IA
   steps:
-  - intent: solicitar_conteudo_prova
-  - action: action_gerar_resposta_com_ia
-
-- story: Usuário pede material de aula (chama IA)
-  steps:
-  - intent: solicitar_material_aula
-  - action: action_gerar_resposta_com_ia
-
-- story: Usuário pede material complementar (chama IA)
-  steps:
-  - intent: solicitar_material_complementar
+  - intent: perguntar_conteudo_ia
   - action: action_gerar_resposta_com_ia

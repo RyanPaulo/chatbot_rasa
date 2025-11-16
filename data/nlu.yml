@@ -1,150 +1,142 @@
-### ONDE TREINAMOS O RASA A ENTENDER O QUE O USUARIO RETORNA PARA ELE ###
-## AQUI DEVEMOS ESPRESAR PARA O RASA A INTENÇÃO DO USUARIO ##
-
 version: "3.1"
 
 nlu:
-#================================================================
-# INTENÇÕES CONVERSACIONAIS E META
-#================================================================
 - intent: saudar
   examples: |
     - oi
+    - ola
     - bom dia
-    - e aí
-    - olá
-    - oiee
-    - tudo bem?
+    - boa tarde
+    - boa noite
+    - e ai
+    - tudo bem
 
 - intent: despedir
   examples: |
     - tchau
-    - até mais
-    - flw
     - adeus
+    - ate mais
+    - ate logo
+    - preciso ir
+    - encerrar
+    - sair
 
 - intent: agradecer
   examples: |
     - obrigado
-    - valeu
-    - ajudou muito
     - obrigada
-    - vlw
-
-- intent: afirmar
-  examples: |
-    - sim
-    - isso
-    - ok
-    - s
-    - isso mesmo
-    - claro
-    - por favor
-    - confirmo
-
-- intent: negar
-  examples: |
-    - não
-    - n
-    - errado
-    - de jeito nenhum
-    - deixa pra lá
-    - cancelar
-
-- intent: bot_challenge
-  examples: |
-    - você é um robô?
-    - estou falando com uma pessoa?
-    - você é uma ia?
-    - quem é vc?
+    - valeu
+    - grato
+    - muito obrigado
+    - ajudou muito
 
 - intent: solicitar_ajuda
   examples: |
-    - o que você faz?
-    - como você pode me ajudar?
     - me ajuda
-    - o que eu posso te perguntar?
+    - o que voce sabe fazer
+    - quais as funcoes
+    - estou perdido
+    - como usar o bot
+    - lista de comandos
 
-#================================================================
-# INTENÇÕES DE INFORMAÇÃO PEDAGÓGICA (DÚVIDAS PEDAGÓGICAS)
-#================================================================
-- intent: solicitar_conteudo_prova
+- intent: bot_challenge
   examples: |
-    - o que vai cair na [NP1]{"entity": "tipo_avaliacao"} de [arquitetura de software]{"entity": "disciplina"}?
-    - qual a matéria da prova de [SD]{"entity": "disciplina"}?
-    - me fala os tópicos do [exame]{"entity": "tipo_avaliacao"} de [clp]{"entity": "disciplina"}
-    - o que eu tenho que estudar pra prova de [Engenharia de Software]{"entity": "disciplina"}?
-    - qual o conteúdo da [sub]{"entity": "tipo_avaliacao"}?
+    - voce e um robo
+    - estou falando com uma pessoa
+    - quem e voce
 
-- intent: solicitar_material_aula
-  examples: |
-    - pode me enviar os [slides]{"entity": "tipo_material"} da aula de [Sistemas Distribuídos]{"entity": "disciplina"}?
-    - onde acho o [pdf]{"entity": "tipo_material"} da aula 5?
-    - o professor subiu o material da aula de hoje?
-    - tem os [slides]{"entity": "tipo_material"} da última aula de [grafos]{"entity": "disciplina"}?
-    - o professor disponibilizou a aula?
-
-- intent: solicitar_material_complementar
-  examples: |
-    - tem algum [artigo]{"entity": "tipo_material"} sobre Big-O?
-    - quais as [leituras recomendadas]{"entity": "tipo_material"} para [IA]{"entity": "disciplina"}?
-    - o professor indicou algum [vídeo]{"entity": "tipo_material"} sobre o assunto da última aula?
-    - tem material complementar de [SD]{"entity": "disciplina"}?
-
-# --- INTENÇÃO DE AVISO (MANTIDA DO SEU ARQUIVO ORIGINAL) ---
-- intent: consultar_aviso
-  examples: |
-    - a aula de [análise de algoritmos]{"entity": "disciplina"} foi cancelada?
-    - teve algum aviso sobre a [entrega do trabalho]{"entity": "prazo_tipo"}?
-    - o professor falou alguma coisa sobre a aula de hoje?
-    - algum recado de [Engenharia de Software]{"entity": "disciplina"}?
-    - tem algum aviso novo?
-    - quais são os ultimos avisos
-    - ver os avisos da faculdade
-    - me mostra os avisos
-
-#================================================================
-# INTENÇÕES ACADÊMICAS E INSTITUCIONAIS (DÚVIDAS ACADÊMICAS)
-#================================================================
 - intent: consultar_data_avaliacao
   examples: |
-    - quando é a [np2]{"entity": "tipo_avaliacao"} de [engenharia de software]{"entity": "disciplina"}?
-    - qual a data de [entrega da APS]{"entity": "prazo_tipo"}?
-    - até quando posso entregar o [TCC]{"entity": "prazo_tipo"}?
-    - quando será a prova [substitutiva]{"entity": "tipo_avaliacao"}?
-    - qual o prazo da [APS]{"entity": "prazo_tipo"}?
+    - quando e a [NP1]{"entity": "tipo_avaliacao"} de [engenharia de software]{"entity": "disciplina"}
+    - data da prova de [SD]{"entity": "disciplina"}
 
 - intent: consultar_horario_aula
   examples: |
-    - que horas é a aula de [banco de dados]{"entity": "disciplina"}?
-    - qual a sala da aula de hoje?
-    - hoje tem aula de que?
-    - onde é a aula de [SD]{"entity": "disciplina"}?
+    - que horas e a aula de [SD]{"entity": "disciplina"}
+    - qual a sala da aula de hoje
+
+- intent: consultar_regras_aps
+  examples: |
+    - qual o prazo da [APS]{"entity": "atividade_academica"}
+    - como entregar a [aps]{"entity": "atividade_academica"}
+    - qual a data de entrega da [aps]{"entity": "atividade_academica"}
+
+- intent: consultar_regras_tcc
+  examples: |
+    - data da banca de [TCC]{"entity": "atividade_academica"}
+    - qual o prazo final do [tcc]{"entity": "atividade_academica"}
+
+- intent: consultar_estagio
+  examples: |
+    - como valido meu [estagio]{"entity": "atividade_academica"}
+    - quantas horas de [estagio]{"entity": "atividade_academica"} preciso
+
+- intent: consultar_horas_complementares
+  examples: |
+    - como entregar [horas complementares]{"entity": "atividade_academica"}
+    - quantas [horas]{"entity": "atividade_academica"} eu tenho
 
 - intent: solicitar_info_docente
   examples: |
-    - qual é o [email]{"entity": "info_docente"} da coordenadora?
-    - qual a [sala]{"entity": "info_docente"} da coordenação?
-    - onde fica a [sala]{"entity": "info_docente"} da [Eliane]{"entity": "nome_docente"}?
-    - qual o [horário de atendimento]{"entity": "info_docente"} da coordenadora [Eliane]{"entity": "nome_docente"}?
-    - como eu falo com a coordenadora?
-    - [email]{"entity": "info_docente"} da coordenação de Ciência da Computação
-    - quando a [Eliane Santiago]{"entity": "nome_docente"} está na faculdade?
-    - qual o [horário]{"entity": "info_docente"} da [Eliane]{"entity": "nome_docente"}?
-    - [contato]{"entity": "info_docente"} da coordenadora
-    - qual o [horário de atendimento]{"entity": "info_docente"} do professor [Alvaro]{"entity": "nome_docente"}?
-    - qual o [email]{"entity": "info_docente"} da [Eliane]{"entity": "nome_docente"}?
-    - como falo com o professor [Hugo Insua]{"entity": "nome_docente"}?
-    - qual o [email]{"entity": "info_docente"} do professor de [redes]{"entity": "disciplina"}?
-    - qual a [sala]{"entity": "info_docente"} do [José Zesinho]{"entity": "nome_docente"}?
+    - qual o email do professor [Zezinho]{"entity": "nome_docente"}
+    - como falo com a coordenadora [Eliane]{"entity": "nome_docente"}
 
-
-- intent: solicitar_info_atividade_academica
+- intent: solicitar_atendimento_docente
   examples: |
-    - como funcionam as [horas complementares]{"entity": "atividade_academica"}?
-    - qual a [carga horária do estágio]{"entity": "atividade_academica"}?
-    - quais são as [regras do TCC]{"entity": "atividade_academica"}?
-    - tem [manual da APS]{"entity": "atividade_academica"}?
+    - qual o horario de atendimento do [Zezinho]{"entity": "nome_docente"}
+    - quando a [Eliane]{"entity": "nome_docente"} esta na faculdade
+    - a professora [Myriam]{"entity": "nome_docente"} atende hoje
+    - atendimento da coordenacao
+    - qual o horario da [Myriam]{"entity": "nome_docente"}?
+    - horario de atendimento do [alvaro]{"entity": "nome_docente"}
+    - quando encontro o [alvaro]{"entity": "nome_docente"}?
+    - qual o horario do professor [alvaro]{"entity": "nome_docente"}?
+    - horario [alvaro]{"entity": "nome_docente"}
+
+- intent: perguntar_conteudo_ia
+  examples: |
+    - o que e [diagrama de classes]{"entity": "topico_estudo"}
+    - me explica [COCOMO]{"entity": "topico_estudo"}
+    - o que significa [UML]{"entity": "topico_estudo"}
+    - definicao de [scrum]{"entity": "topico_estudo"}
+    - o que e [PaaS]{"entity": "topico_estudo"}
+    - o que e [Cloud Computing]{"entity": "topico_estudo"}
+    - o que e cocomo 81
+
+- intent: solicitar_material_aula
+  examples: |
+    - disponibiliza os slides de [SD]{"entity": "disciplina"}
+    - quero baixar o pdf da aula de [engenharia]{"entity": "disciplina"}
+    - tem material complementar de [banco de dados]{"entity": "disciplina"}
+    - onde baixo os arquivos da aula
+    - vc consegue me mandar esse material?
+    - pode me enviar o material de cloud computing?
+    - me manda o pdf sobre cocomo
+    - me manda o material de [cloud computing]{"entity": "disciplina"}
+    - vc consegue me mandar esse material?
+    - pode me enviar o material de [cloud computing]{"entity": "disciplina"}?
+    - me manda o pdf sobre [cocomo]{"entity": "topico_estudo"}
+    - me mande material de [Qualidade de Software]{"entity": "disciplina"}
+    - quero o material de [engenharia de software]{"entity": "disciplina"}
+
+- intent: consultar_aviso
+  examples: |
+    - tem algum aviso novo
+    - a aula foi cancelada
+    - recados do professor
+    - ultimos avisos da coordenacao
+    - quais sao os avisos mais recentes
+    - me lista os avisos
+    - ver recados
+    - algum comunicado importante?
+
+- intent: informar_disciplina
+  examples: |
+    - [Cloud Computing]{"entity": "disciplina"}
+    - [Qualidade de Software]{"entity": "disciplina"}
+    - [Engenharia de Software]{"entity": "disciplina"}
+    - a materia [Sistemas Distribuidos]{"entity": "disciplina"}
+
 
 #================================================================
 # DICIONÁRIOS (Lookup Tables)
@@ -174,6 +166,9 @@ nlu:
     - Legislação Computacional 
     - Administração 
     - Gestão de Projetos
+    - Gestao
+    - Cloud Computing
+    - Qualidade de Software
 
 
 - lookup: tipo_avaliacao
