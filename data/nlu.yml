@@ -49,37 +49,91 @@ nlu:
   examples: |
     - quando e a [NP1]{"entity": "tipo_avaliacao"} de [engenharia de software]{"entity": "disciplina"}
     - data da prova de [SD]{"entity": "disciplina"}
+    - quando e a [np1]{"entity": "tipo_avaliacao"} de [ES]{"entity": "disciplina"}
+    - data da [prova 1]{"entity": "tipo_avaliacao"} de [engenharia]{"entity": "disciplina"}
+    - qual a data do [exame]{"entity": "tipo_avaliacao"} de [Banco de Dados]{"entity": "disciplina"}
+    - quando e a [NP2]{"entity": "tipo_avaliacao"} de [Cloud Computing]{"entity": "disciplina"}
+    - data da [substitutiva]{"entity": "tipo_avaliacao"} de [Qualidade de Software]{"entity": "disciplina"}
+    - quando vai acontecer a [NP1]{"entity": "tipo_avaliacao"} de [engenharia de software]{"entity": "disciplina"}
+    - data da prova de [Engenharia de Software]{"entity": "disciplina"}
+    - data da [prova 1]{"entity": "tipo_avaliacao"} de [sistemas distribuidos]{"entity": "disciplina"}
+    - data da [prova 2]{"entity": "tipo_avaliacao"} de [sistemas distribuidos]{"entity": "disciplina"}
+    - data [prova substitutiva]{"entity": "tipo_avaliacao"} de [sistemas distribuidos]{"entity": "disciplina"}
+    - quando e a prova de [sistemas distribuidos]{"entity": "disciplina"}
+    - qual a data da prova de [engenharia de software]{"entity": "disciplina"}
 
 - intent: consultar_horario_aula
   examples: |
     - que horas e a aula de [SD]{"entity": "disciplina"}
-    - qual a sala da aula de hoje
+    - qual a sala da aula de [engenharia de software]{"entity": "disciplina"}
+    - que dia e a aula de [Banco de Dados]{"entity": "disciplina"}
+    - horario da aula de [Cloud Computing]{"entity": "disciplina"}
+    - quando e a aula de [Sistemas Distribuidos]{"entity": "disciplina"}
+    - qual o horario de [Qualidade de Software]{"entity": "disciplina"}
+    - que horas comeca [Inteligencia Artificial]{"entity": "disciplina"}
+    - que horas e a aula de [Sistemas Distribuidos]{"entity": "disciplina"}
+    - qual a sala da aula de [Engenharia de Software]{"entity": "disciplina"}
+    - quando e a aula de [qualidade de software]{"entity": "disciplina"}
+    - horario de [sistemas distribuidos]{"entity": "disciplina"}
+    - que horas comeca a aula de [engenharia de software]{"entity": "disciplina"}
 
 - intent: consultar_regras_aps
   examples: |
     - qual o prazo da [APS]{"entity": "atividade_academica"}
     - como entregar a [aps]{"entity": "atividade_academica"}
     - qual a data de entrega da [aps]{"entity": "atividade_academica"}
+    - o que e [APS]{"entity": "atividade_academica"}
+    - informacoes sobre [APS]{"entity": "atividade_academica"}
+    - informacoes sobre [Atividades Praticas Supervisionadas]{"entity": "atividade_academica"}
+    - regras da [aps]{"entity": "atividade_academica"}
+    - regras do [APS]{"entity": "atividade_academica"}
+    - como funciona a [aps]{"entity": "atividade_academica"}
+    - preciso de informacoes sobre [APS]{"entity": "atividade_academica"}
 
 - intent: consultar_regras_tcc
   examples: |
     - data da banca de [TCC]{"entity": "atividade_academica"}
     - qual o prazo final do [tcc]{"entity": "atividade_academica"}
+    - o que e [TCC]{"entity": "atividade_academica"}
+    - informacoes sobre [TCC]{"entity": "atividade_academica"}
+    - informacoes sobre [Trabalho de Conclusao de Curso]{"entity": "atividade_academica"}
+    - regras do [tcc]{"entity": "atividade_academica"}
+    - regras do [TCC]{"entity": "atividade_academica"}
+    - quando comeca o [tcc]{"entity": "atividade_academica"}
+    - quando comeca o [TCC]{"entity": "atividade_academica"}
+    - data de entrega do [tcc]{"entity": "atividade_academica"}
+    - preciso de informacoes sobre [TCC]{"entity": "atividade_academica"}
 
 - intent: consultar_estagio
   examples: |
     - como valido meu [estagio]{"entity": "atividade_academica"}
     - quantas horas de [estagio]{"entity": "atividade_academica"} preciso
+    - informacoes sobre [estagio]{"entity": "atividade_academica"}
+    - informacoes sobre [estagio]{"entity": "atividade_academica"}
+    - regras de [estagio]{"entity": "atividade_academica"}
+    - regras do [estagio]{"entity": "atividade_academica"}
+    - preciso de informacoes sobre [estagio]{"entity": "atividade_academica"}
 
 - intent: consultar_horas_complementares
   examples: |
     - como entregar [horas complementares]{"entity": "atividade_academica"}
     - quantas [horas]{"entity": "atividade_academica"} eu tenho
+    - informacoes sobre [horas complementares]{"entity": "atividade_academica"}
+    - informacoes sobre [Horas Complementares]{"entity": "atividade_academica"}
+    - regras de [horas complementares]{"entity": "atividade_academica"}
+    - preciso de informacoes sobre [horas complementares]{"entity": "atividade_academica"}
 
 - intent: solicitar_info_docente
   examples: |
     - qual o email do professor [Zezinho]{"entity": "nome_docente"}
     - como falo com a coordenadora [Eliane]{"entity": "nome_docente"}
+    - preciso do contato do [Alvaro]{"entity": "nome_docente"}
+    - email da [Myriam]{"entity": "nome_docente"}
+    - qual a sala do [Hugo]{"entity": "nome_docente"}
+    - onde encontro o [Magrini]{"entity": "nome_docente"}
+    - contato do professor [Zezinho]{"entity": "nome_docente"}
+    - me passa o email do [Alvaro]{"entity": "nome_docente"}
+    - qual o contato da [Eliane]{"entity": "nome_docente"}
 
 - intent: solicitar_atendimento_docente
   examples: |
@@ -92,6 +146,10 @@ nlu:
     - quando encontro o [alvaro]{"entity": "nome_docente"}?
     - qual o horario do professor [alvaro]{"entity": "nome_docente"}?
     - horario [alvaro]{"entity": "nome_docente"}
+    - qual horario de atendimento do [alvaro]{"entity": "nome_docente"}
+    - quando a [eliane]{"entity": "nome_docente"} esta na faculdade
+    - atendimento [coordenacao]{"entity": "nome_docente"}
+    - horario de atendimento da [coordenacao]{"entity": "nome_docente"}
 
 - intent: perguntar_conteudo_ia
   examples: |
@@ -101,7 +159,7 @@ nlu:
     - definicao de [scrum]{"entity": "topico_estudo"}
     - o que e [PaaS]{"entity": "topico_estudo"}
     - o que e [Cloud Computing]{"entity": "topico_estudo"}
-    - o que e cocomo 81
+    - o que e [cocomo 81]{"entity": "topico_estudo"}
 
 - intent: solicitar_material_aula
   examples: |
@@ -109,15 +167,21 @@ nlu:
     - quero baixar o pdf da aula de [engenharia]{"entity": "disciplina"}
     - tem material complementar de [banco de dados]{"entity": "disciplina"}
     - onde baixo os arquivos da aula
-    - vc consegue me mandar esse material?
-    - pode me enviar o material de cloud computing?
-    - me manda o pdf sobre cocomo
-    - me manda o material de [cloud computing]{"entity": "disciplina"}
+    - onde baixa os arquivos da aula
+    - onde baixar os arquivos da aula
     - vc consegue me mandar esse material?
     - pode me enviar o material de [cloud computing]{"entity": "disciplina"}?
     - me manda o pdf sobre [cocomo]{"entity": "topico_estudo"}
+    - me manda o material de [cloud computing]{"entity": "disciplina"}
     - me mande material de [Qualidade de Software]{"entity": "disciplina"}
     - quero o material de [engenharia de software]{"entity": "disciplina"}
+    - preciso dos slides da aula de [Sistemas Distribuidos]{"entity": "disciplina"}
+    - tem pdf de [Banco de Dados]{"entity": "disciplina"}?
+    - quero baixar material de [Inteligencia Artificial]{"entity": "disciplina"}
+    - disponibilize os slides de [engenharia de software]{"entity": "disciplina"}
+    - disponilize slides de [sistemas distribuidos]{"entity": "disciplina"}
+    - preciso do material de [engenharia de software]{"entity": "disciplina"}
+    - quero os slides de [sistemas distribuidos]{"entity": "disciplina"}
 
 - intent: consultar_aviso
   examples: |
@@ -136,6 +200,21 @@ nlu:
     - [Qualidade de Software]{"entity": "disciplina"}
     - [Engenharia de Software]{"entity": "disciplina"}
     - a materia [Sistemas Distribuidos]{"entity": "disciplina"}
+    - [sistemas distribuidos]{"entity": "disciplina"}
+    - [Sistemas Distribuidos]{"entity": "disciplina"}
+    - [engenharia de software]{"entity": "disciplina"}
+    - [Engenharia de Software]{"entity": "disciplina"}
+
+- intent: consultar_duvidas_frequentes
+  examples: |
+    - quais sao as duvidas mais frequentes
+    - o que os alunos mais perguntam
+    - duvidas frequentes
+    - categorias mais perguntadas
+    - quais sao os topicos mais consultados
+    - o que e mais perguntado
+    - quais sao as perguntas mais comuns
+    - duvidas mais frequentes dos alunos
 
 
 #================================================================
@@ -148,7 +227,6 @@ nlu:
     - Compiladores e Computabilidade
     - Desenvolvimento de Sistemas Distribuídos
     - Empreendedorismo
-    - Compiladores e Computabilidade
     - Análise de Algoritmos
     - Sistemas Distribuídos
     - Engenharia de Software
@@ -157,7 +235,7 @@ nlu:
     - Inteligência Artificial
     - Redes de Computadores
     - Grafos
-    - ClP
+    - CLP
     - Arquitetura de Software
     - Fisica para Computação
     - Noçoes de Direito
@@ -166,9 +244,8 @@ nlu:
     - Legislação Computacional 
     - Administração 
     - Gestão de Projetos
-    - Gestao
+    - Gestão
     - Cloud Computing
-    - Qualidade de Software
 
 
 - lookup: tipo_avaliacao

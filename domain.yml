@@ -18,6 +18,7 @@ intents:
   - perguntar_conteudo_ia
   - solicitar_material_aula
   - informar_disciplina  # <-- ADICIONADO
+  - consultar_duvidas_frequentes
 
 entities:
   - disciplina
@@ -74,6 +75,7 @@ actions:
   - action_gerar_resposta_com_ia
   - action_buscar_atendimento_docente
   - action_buscar_material
+  - action_buscar_duvidas_frequentes
 
 forms:
   form_atendimento_docente:

@@ -1,0 +1,24 @@
+---
+alwaysApply: true
+---
+Este é um chatbot acadêmico que usa o framework Rasa.
+
+# ARQUITETURA DO PROJETO
+O projeto é dividido em duas partes principais:
+1.  **Chatbot Rasa (este projeto):** Processa a linguagem do usuário.
+2.  **API FastAPI (servidor externo):** Centraliza a lógica de negócios, o acesso ao banco de dados (Supabase) e a conexão com a IA generativa (Google Gemini).
+
+# ARQUIVOS RASA ESSENCIAIS
+-   **Domínio:** @domain.yml define todas as `intents`, `entities`, `slots` e `actions`.
+-   **Treinamento NLU:** @data/nlu.yml contém os exemplos de frases para cada `intent`.
+-   **Fluxo:** @data/rules.yml define as regras de como o bot deve responder.
+-   **Configuração:** @config.yml define o pipeline de NLU e as políticas do Core.
+
+# LÓGICA DE AÇÕES (MUITO IMPORTANTE)
+-   O arquivo @actions/actions.py define a lógica customizada.
+-   **Regra Crucial:** As actions neste arquivo (ex: `ActionBuscarUltimosAvisos`) **NÃO** contêm a lógica de negócios. Elas **APENAS** fazem requisições HTTP (GET ou POST) para uma API FastAPI rodando em `http://127.0.0.1:8000` (definido em `API_URL`).
+-   A action `action_gerar_resposta_com_ia` é especial: ela envia a pergunta do usuário para o endpoint `/ia/gerar-resposta` da API FastAPI, que por sua vez chama o Google Gemini.
+
+# ENDPOINTS E EXECUÇÃO
+-   @endpoints.yml define onde o servidor de actions está rodando (porta 5055).
+-   @run_rasa.py é o script customizado para iniciar o servidor principal do Rasa (porta 5005, com API e CORS ativados).
