@@ -8,6 +8,9 @@ import requests
 from rasa_sdk.events import SlotSet
 import logging
 import json
+import re
+from urllib.parse import quote, unquote
+import unicodedata
 
 if platform.system() == "Windows":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -39,40 +42,146 @@ class CacheHelper:
     CACHE_TTL = 300  # 5 minutos
     
     @staticmethod
+    def _normalizar_nome_disciplina(nome: str) -> str:
+        """
+        Normaliza o nome da disciplina para busca:
+        - Remove espaços extras
+        - Remove acentos
+        - Converte para minúsculas
+        """
+        # Remove espaços extras e converte para minúsculas
+        nome = ' '.join(nome.strip().split())
+        # Remove acentos
+        nome_normalizado = unicodedata.normalize('NFD', nome)
+        nome_normalizado = ''.join(char for char in nome_normalizado if unicodedata.category(char) != 'Mn')
+        return nome_normalizado.lower()
+    
+    @staticmethod
     def get_disciplina_id(disciplina_nome: str) -> str | None:
         """
         Busca ID de disciplina com cache.
-        Usa endpoint de cronograma que aceita nome.
+        Primeiro tenta buscar na lista de disciplinas (método mais confiável).
+        Se não encontrar, tenta endpoint de cronograma como fallback.
         """
-        # Normalizar nome
-        nome_normalizado = disciplina_nome.strip()
+        # Normalizar nome (limpar espaços extras)
+        nome_original = disciplina_nome.strip()
+        nome_busca = ' '.join(nome_original.split())  # Remove espaços múltiplos
         
         # Verificar cache
-        if nome_normalizado in CacheHelper._cache_disciplinas:
-            timestamp = CacheHelper._cache_timestamp.get(f"disc_{nome_normalizado}")
+        if nome_busca in CacheHelper._cache_disciplinas:
+            timestamp = CacheHelper._cache_timestamp.get(f"disc_{nome_busca}")
             if timestamp and datetime.now() - timestamp < timedelta(seconds=CacheHelper.CACHE_TTL):
-                logger.info(f"Cache HIT: disciplina '{nome_normalizado}'")
-                return CacheHelper._cache_disciplinas[nome_normalizado]
+                logger.info(f"Cache HIT: disciplina '{nome_busca}'")
+                return CacheHelper._cache_disciplinas[nome_busca]
         
-        # Buscar na API
+        # PRIMEIRO: Tentar buscar na lista de disciplinas (método mais confiável)
+        logger.info(f"Cache MISS: buscando disciplina '{nome_busca}' na lista de disciplinas")
+        id_disciplina = CacheHelper._buscar_disciplina_na_lista(nome_busca)
+        
+        if id_disciplina:
+            return id_disciplina
+        
+        # FALLBACK: Tentar buscar via endpoint de cronograma
         try:
-            logger.info(f"Cache MISS: buscando disciplina '{nome_normalizado}' na API")
-            response = requests.get(
-                f"{API_URL}/disciplinas/get_diciplina_nome/{nome_normalizado}/cronograma",
-                timeout=10
-            )
+            logger.info(f"Tentando buscar disciplina '{nome_busca}' via endpoint de cronograma")
+            
+            # CORREÇÃO: Codificar o nome na URL corretamente
+            nome_codificado = quote(nome_busca, safe='')
+            url = f"{API_URL}/disciplinas/get_diciplina_nome/{nome_codificado}/cronograma"
+            logger.debug(f"URL da busca: {url}")
+            
+            response = requests.get(url, timeout=10)
+            
             if response.ok:
                 cronogramas = response.json()
                 if cronogramas and isinstance(cronogramas, list) and len(cronogramas) > 0:
                     id_disciplina = cronogramas[0].get('id_disciplina')
                     if id_disciplina:
-                        CacheHelper._cache_disciplinas[nome_normalizado] = id_disciplina
-                        CacheHelper._cache_timestamp[f"disc_{nome_normalizado}"] = datetime.now()
-                        logger.info(f"Cache SET: disciplina '{nome_normalizado}' -> {id_disciplina}")
+                        CacheHelper._cache_disciplinas[nome_busca] = id_disciplina
+                        CacheHelper._cache_timestamp[f"disc_{nome_busca}"] = datetime.now()
+                        logger.info(f"Cache SET: disciplina '{nome_busca}' -> {id_disciplina} (via cronograma)")
                         return id_disciplina
+            
             return None
         except requests.exceptions.RequestException as e:
-            logger.error(f"Erro ao buscar disciplina '{nome_normalizado}': {e}")
+            logger.error(f"Erro ao buscar disciplina via cronograma '{nome_busca}': {e}")
+            return None
+    
+    @staticmethod
+    def _buscar_disciplina_na_lista(nome_busca: str) -> str | None:
+        """
+        Busca disciplina na lista completa de disciplinas fazendo match parcial.
+        Fallback quando o endpoint de cronograma não encontra.
+        """
+        try:
+            # Buscar lista de todas as disciplinas
+            response = requests.get(f"{API_URL}/disciplinas/lista_disciplina/", timeout=10)
+            if not response.ok:
+                return None
+            
+            disciplinas = response.json()
+            if not disciplinas or not isinstance(disciplinas, list):
+                return None
+            
+            nome_busca_normalizado = CacheHelper._normalizar_nome_disciplina(nome_busca)
+            
+            # Extrair palavras-chave do nome buscado (palavras com mais de 2 caracteres)
+            palavras_chave_busca = [p for p in nome_busca_normalizado.split() if len(p) > 2]
+            
+            melhor_match = None
+            melhor_score = 0
+            
+            # Fazer match parcial
+            for disc in disciplinas:
+                if not isinstance(disc, dict):
+                    continue
+                
+                nome_disc = disc.get('nome_disciplina', '')
+                if not nome_disc:
+                    continue
+                
+                nome_disc_normalizado = CacheHelper._normalizar_nome_disciplina(nome_disc)
+                
+                # Verificar match exato ou parcial
+                score = 0
+                
+                # Match exato (maior prioridade)
+                if nome_busca_normalizado == nome_disc_normalizado:
+                    score = 100
+                # Nome buscado está contido no nome da disciplina (ex: "Sistemas Distribuídos" em "Desenvolvimento de Sistemas Distribuídos")
+                elif nome_busca_normalizado in nome_disc_normalizado:
+                    score = 80
+                # Nome da disciplina está contido no nome buscado
+                elif nome_disc_normalizado in nome_busca_normalizado:
+                    score = 70
+                # Match por palavras-chave (verificar se todas as palavras importantes estão presentes)
+                elif palavras_chave_busca:
+                    palavras_disc = set(nome_disc_normalizado.split())
+                    palavras_match = sum(1 for p in palavras_chave_busca if p in nome_disc_normalizado)
+                    if palavras_match == len(palavras_chave_busca):
+                        score = 60 + palavras_match * 5
+                    elif palavras_match > 0:
+                        score = 30 + palavras_match * 5
+                
+                if score > melhor_score:
+                    melhor_score = score
+                    melhor_match = disc
+            
+            if melhor_match and melhor_score >= 30:
+                id_disciplina = melhor_match.get('id_disciplina')
+                nome_disc_encontrado = melhor_match.get('nome_disciplina', '')
+                if id_disciplina:
+                    # Armazenar no cache com o nome original buscado
+                    CacheHelper._cache_disciplinas[nome_busca] = id_disciplina
+                    CacheHelper._cache_timestamp[f"disc_{nome_busca}"] = datetime.now()
+                    logger.info(f"Disciplina encontrada na lista: '{nome_busca}' -> '{nome_disc_encontrado}' ({id_disciplina}) [score: {melhor_score}]")
+                    return id_disciplina
+            
+            logger.warning(f"Disciplina '{nome_busca}' nao encontrada na lista de disciplinas (melhor score: {melhor_score})")
+            return None
+            
+        except Exception as e:
+            logger.error(f"Erro ao buscar disciplina na lista: {e}")
             return None
     
     @staticmethod
@@ -305,18 +414,18 @@ def extrair_topicos_da_pergunta(pergunta: str) -> list[str]:
     if not topicos:
         try:
             response = requests.get(
-                f"{API_URL}/ia/testar-baseconhecimento",
+                f"{API_URL}/baseconhecimento/get_buscar",
                 params={"q": pergunta},
                 timeout=10
             )
             if response.ok:
                 dados = response.json()
-                if dados.get("quantidade_contextos", 0) > 0:
+                contextos = dados.get("contextos", [])
+                if contextos and len(contextos) > 0:
                     # É dúvida de conteúdo - adicionar marcador
                     topicos.append("Conteúdo")
-                    # Tentar extrair categoria/palavras-chave da resposta
-                    # (Isso requer endpoint que retorne essas informações)
-        except:
+        except Exception as e:
+            logger.debug(f"Erro ao verificar conteudo na base de conhecimento: {e}")
             pass
     
     return topicos if topicos else ["Geral"]
@@ -327,6 +436,74 @@ def get_disciplina_id_by_name(disciplina_nome: Text) -> str | None:
     NOTA: Usa endpoint de cronograma que aceita nome (solução temporária).
     """
     return CacheHelper.get_disciplina_id(disciplina_nome)
+
+def buscar_urls_documentos_relacionados(termo_busca: str, limite: int = 3) -> list[str]:
+    """
+    Busca URLs de documentos relacionados a um termo usando endpoints existentes da API.
+    Usa /baseconhecimento/get_baseconhecimento_url_documento/{termo} para buscar documentos.
+    
+    Args:
+        termo_busca: Termo para buscar documentos
+        limite: Número máximo de URLs para retornar
+        
+    Returns:
+        Lista de URLs de documentos encontrados
+    """
+    urls_encontradas = []
+    
+    try:
+        # Extrair palavras-chave do termo de busca (palavras com mais de 3 caracteres)
+        palavras_chave = re.findall(r'\b\w{4,}\b', termo_busca.lower())
+        
+        # Se não houver palavras-chave, usar o termo completo
+        if not palavras_chave:
+            palavras_chave = [termo_busca[:50]]  # Limitar tamanho
+        
+        # Buscar documentos por cada palavra-chave (limitado ao limite)
+        for palavra in palavras_chave[:limite]:
+            try:
+                # Codificar a palavra na URL
+                palavra_codificada = quote(palavra, safe='')
+                response = requests.get(
+                    f"{API_URL}/baseconhecimento/get_baseconhecimento_url_documento/{palavra_codificada}",
+                    timeout=10
+                )
+                
+                if response.ok:
+                    dados = response.json()
+                    url_doc = dados.get("url_documento")
+                    if url_doc and url_doc not in urls_encontradas:
+                        urls_encontradas.append(url_doc)
+                        
+                        # Se já encontrou o limite, parar
+                        if len(urls_encontradas) >= limite:
+                            break
+            except Exception as e:
+                logger.debug(f"Erro ao buscar documento para '{palavra}': {e}")
+                continue
+        
+        # Se não encontrou nada, tentar buscar com o termo completo
+        if not urls_encontradas and termo_busca:
+            try:
+                termo_codificado = quote(termo_busca[:50], safe='')
+                response = requests.get(
+                    f"{API_URL}/baseconhecimento/get_baseconhecimento_url_documento/{termo_codificado}",
+                    timeout=10
+                )
+                if response.ok:
+                    dados = response.json()
+                    url_doc = dados.get("url_documento")
+                    if url_doc:
+                        urls_encontradas.append(url_doc)
+            except Exception as e:
+                logger.debug(f"Erro ao buscar documento com termo completo: {e}")
+        
+        logger.info(f"Encontradas {len(urls_encontradas)} URL(s) de documento(s) para '{termo_busca}'")
+        return urls_encontradas[:limite]
+        
+    except Exception as e:
+        logger.warning(f"Erro ao buscar URLs de documentos: {e}")
+        return []
 
 class ActionBuscarUltimosAvisos(Action):
     def name(self) -> Text:
@@ -354,9 +531,9 @@ class ActionBuscarUltimosAvisos(Action):
                 mensagem = "Ultimos Avisos:\n\n"
                 for aviso in avisos[:3]:
                     if isinstance(aviso, dict):
-                    titulo = aviso.get('titulo', 'Aviso')
-                    conteudo = aviso.get('conteudo', '')
-                    mensagem += f"Titulo: {titulo}\nConteudo: {conteudo}\n----------------\n"
+                        titulo = aviso.get('titulo', 'Aviso')
+                        conteudo = aviso.get('conteudo', '')
+                        mensagem += f"Titulo: {titulo}\nConteudo: {conteudo}\n----------------\n"
                 dispatcher.utter_message(text=mensagem)
                 logger.info(f"[{self.name()}] {len(avisos[:3])} avisos retornados")
         except Exception as e:
@@ -401,18 +578,44 @@ class ActionBuscarCronograma(Action):
                 dispatcher.utter_message(text=f"Sem horarios cadastrados para {disciplina_nome}.")
                 logger.info(f"[{self.name()}] Nenhum cronograma encontrado para '{disciplina_nome}'")
             else:
+                # Mapear número do dia para nome
+                dias_semana = {
+                    1: "Segunda-feira",
+                    2: "Terça-feira",
+                    3: "Quarta-feira",
+                    4: "Quinta-feira",
+                    5: "Sexta-feira",
+                    6: "Sábado",
+                    7: "Domingo"
+                }
+                
                 msg = f"Horario de {disciplina_nome}:\n"
-                    for item in cronogramas:
+                for item in cronogramas:
                     if isinstance(item, dict):
-                        dia = item.get('dia_semana', '')
+                        # Verificar se id_disciplina corresponde à disciplina buscada (filtro adicional)
+                        item_id_disc = item.get('id_disciplina')
+                        if item_id_disc and item_id_disc != disciplina_id:
+                            # Pular se não for da disciplina correta
+                            logger.warning(f"[{self.name()}] Item de outra disciplina encontrado: {item_id_disc} != {disciplina_id}")
+                            continue
+                        
+                        dia_num = item.get('dia_semana', '')
+                        # Converter número para nome do dia se necessário
+                        if isinstance(dia_num, int):
+                            dia = dias_semana.get(dia_num, f"Dia {dia_num}")
+                        elif isinstance(dia_num, str) and dia_num.isdigit():
+                            dia = dias_semana.get(int(dia_num), f"Dia {dia_num}")
+                        else:
+                            dia = dia_num if dia_num else 'N/A'
+                        
                         inicio = item.get('hora_inicio', '')
                         sala = item.get('sala', 'N/A')
                         msg += f"- {dia} as {inicio} (Sala {sala})\n"
-                else:
+                    else:
                         logger.warning(f"[{self.name()}] Item do cronograma nao e dict: {type(item)}")
                 
                 dispatcher.utter_message(text=msg)
-                logger.info(f"[{self.name()}] {len(cronogramas)} cronograma(s) retornado(s)")
+                logger.info(f"[{self.name()}] {len(cronogramas)} cronograma(s) retornado(s) para '{disciplina_nome}'")
 
         except Exception as e:
             ErrorHandler.handle_api_error(
@@ -463,21 +666,14 @@ class ActionGerarRespostaComIA(Action):
             
             # NOVO: Buscar URLs dos documentos usados como referência
             try:
-                response_docs = requests.get(
-                    f"{API_URL}/ia/testar-baseconhecimento",
-                    params={"q": pergunta_aluno},
-                    timeout=10
-                )
-                if response_docs.ok:
-                    dados_docs = ResponseValidator.validate_json_response(response_docs)
-                    if dados_docs:
-                        urls_documentos = dados_docs.get("urls_documentos", [])
-                        
-                        if urls_documentos:
-                            texto_resposta += "\n\n📎 **Documentos de referência:**\n"
-                            for i, url in enumerate(urls_documentos[:3], 1):  # Limita a 3
-                                texto_resposta += f"{i}. {url}\n"
-                            logger.info(f"[{self.name()}] {len(urls_documentos[:3])} URL(s) de referencia adicionada(s)")
+                # Usar função helper para buscar URLs de documentos relacionados
+                urls_documentos = buscar_urls_documentos_relacionados(pergunta_aluno, limite=3)
+                
+                if urls_documentos:
+                    texto_resposta += "\n\n📎 **Documentos de referência:**\n"
+                    for i, url in enumerate(urls_documentos, 1):
+                        texto_resposta += f"{i}. {url}\n"
+                    logger.info(f"[{self.name()}] {len(urls_documentos)} URL(s) de referencia adicionada(s)")
             except Exception as e:
                 logger.warning(f"[{self.name()}] Erro ao buscar URLs de referencia: {e}")
                 # Se falhar, não interrompe a resposta principal
@@ -503,8 +699,35 @@ class ActionBuscarDataAvaliacao(Action):
         # Salvar pergunta do aluno
         salvar_pergunta_aluno(pergunta_aluno)
         
+        # Verificar se é pergunta sobre todas as provas (sem disciplina específica)
+        pergunta_lower = pergunta_aluno.lower()
+        palavras_todas_provas = ["quais sao as provas", "lista todas as provas", "quais provas estao marcadas", 
+                                  "todas as provas", "provas marcadas", "lista de avaliacoes", "quais avaliacoes tem"]
+        if any(palavra in pergunta_lower for palavra in palavras_todas_provas):
+            # Chamar action para listar todas as provas
+            action_listar = ActionListarTodasProvas()
+            return action_listar.run(dispatcher, tracker, domain)
+        
         disciplina_nome = next(tracker.get_latest_entity_values("disciplina"), None)
         termo_busca = next(tracker.get_latest_entity_values("tipo_avaliacao"), "prova")
+        
+        # CORREÇÃO: Extrair disciplina manualmente se não foi extraída
+        # O problema é que "é" pode ser confundido com disciplina
+        if not disciplina_nome:
+            # Tentar extrair manualmente do texto
+            palavras_remover = ["é", "de", "a", "o", "da", "do", "das", "dos", "quando", "qual", "aula", "avaliacao", "avaliação", "prova", "provas"]
+            palavras = pergunta_aluno.split()
+            # Procurar por palavras que podem ser nomes de disciplinas
+            for i, palavra in enumerate(palavras):
+                palavra_limpa = palavra.lower().strip('.,!?;:')
+                if palavra_limpa not in palavras_remover and len(palavra_limpa) > 2:
+                    # Tentar buscar disciplina com essa palavra ou combinação
+                    possivel_disc = ' '.join(palavras[i:i+4])  # Pegar até 4 palavras consecutivas
+                    id_test = get_disciplina_id_by_name(possivel_disc)
+                    if id_test:
+                        disciplina_nome = possivel_disc
+                        logger.info(f"[{self.name()}] Disciplina extraida manualmente: '{disciplina_nome}'")
+                        break
 
         if not disciplina_nome:
             dispatcher.utter_message(text="Qual a disciplina?")
@@ -524,38 +747,46 @@ class ActionBuscarDataAvaliacao(Action):
             # VALIDAÇÃO ADICIONADA
             avaliacoes = ResponseValidator.validate_list_response(response)
             
-                encontradas = []
+            encontradas = []
             termo_busca_lower = termo_busca.lower()
             
-                for aval in avaliacoes:
+            for aval in avaliacoes:
                 if not isinstance(aval, dict):
                     logger.warning(f"[{self.name()}] Item de avaliacao nao e dict: {type(aval)}")
                     continue
                     
-                nome_aval = aval.get('topico', '')
-                data_aval = aval.get('data', '')
+                tipo_aval = aval.get('tipo_avaliacao', '')
+                data_aval = aval.get('data_prova', '')  # CORREÇÃO: campo correto da API
                 
-                # Pular se topico ou data forem None
-                if not nome_aval or not data_aval:
+                # Pular se tipo ou data forem None
+                if not tipo_aval or not data_aval:
                     continue
                 
-                nome_aval_lower = nome_aval.lower()
+                tipo_aval_lower = tipo_aval.lower()
                 
                 # Melhorar filtro de busca
-                if termo_busca_lower == "prova":
+                if termo_busca_lower in ["prova", "provas", "avaliacao", "avaliação"]:
                     # Se busca genérica "prova", retorna todas
                     data_fmt = data_aval.split('T')[0] if 'T' in data_aval else data_aval
-                    encontradas.append(f"- {nome_aval}: {data_fmt}")
-                elif termo_busca_lower in nome_aval_lower:
-                    # Se termo específico está no nome
+                    encontradas.append(f"- {tipo_aval}: {data_fmt}")
+                elif termo_busca_lower == "np1" and tipo_aval_lower == "np1":
                     data_fmt = data_aval.split('T')[0] if 'T' in data_aval else data_aval
-                    encontradas.append(f"- {nome_aval}: {data_fmt}")
+                    encontradas.append(f"- {tipo_aval}: {data_fmt}")
+                elif termo_busca_lower == "np2" and tipo_aval_lower == "np2":
+                    data_fmt = data_aval.split('T')[0] if 'T' in data_aval else data_aval
+                    encontradas.append(f"- {tipo_aval}: {data_fmt}")
+                elif termo_busca_lower in ["sub", "substitutiva"] and tipo_aval_lower == "sub":
+                    data_fmt = data_aval.split('T')[0] if 'T' in data_aval else data_aval
+                    encontradas.append(f"- {tipo_aval}: {data_fmt}")
+                elif termo_busca_lower == "exame" and tipo_aval_lower == "exame":
+                    data_fmt = data_aval.split('T')[0] if 'T' in data_aval else data_aval
+                    encontradas.append(f"- {tipo_aval}: {data_fmt}")
 
-                if encontradas:
-                    dispatcher.utter_message(text=f"Datas:\n" + "\n".join(encontradas))
+            if encontradas:
+                dispatcher.utter_message(text=f"Datas:\n" + "\n".join(encontradas))
                 logger.info(f"[{self.name()}] {len(encontradas)} avaliacao(oes) encontrada(s)")
-                else:
-                    dispatcher.utter_message(text=f"Nao achei datas de {termo_busca} para essa materia.")
+            else:
+                dispatcher.utter_message(text=f"Nao achei datas de {termo_busca} para essa materia.")
                 logger.info(f"[{self.name()}] Nenhuma avaliacao encontrada para '{termo_busca}'")
                 
         except Exception as e:
@@ -564,6 +795,105 @@ class ActionBuscarDataAvaliacao(Action):
                 context=f"Buscar avaliacoes - disciplina {disciplina_nome}, tipo {termo_busca}",
                 action_name=self.name()
             )
+        return []
+
+class ActionListarTodasProvas(Action):
+    def name(self) -> Text:
+        return "action_listar_todas_provas"
+
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        pergunta_aluno = tracker.latest_message.get('text')
+        # Salvar pergunta do aluno
+        salvar_pergunta_aluno(pergunta_aluno)
+        
+        logger.info(f"[{self.name()}] Listando todas as provas")
+        dispatcher.utter_message(text="Buscando todas as provas agendadas...")
+        
+        try:
+            # SOLUÇÃO: Buscar lista de disciplinas e depois buscar avaliações para cada uma
+            disciplinas_map = {}  # Map id -> nome
+            avaliacoes_por_disciplina = {}
+            
+            # 1. Buscar lista de todas as disciplinas
+            logger.info(f"[{self.name()}] Buscando lista de disciplinas")
+            response_disciplinas = requests.get(f"{API_URL}/disciplinas/lista_disciplina/", timeout=10)
+            
+            if not response_disciplinas.ok:
+                dispatcher.utter_message(text="Nao foi possivel buscar a lista de disciplinas no momento.")
+                logger.warning(f"[{self.name()}] Erro ao buscar lista de disciplinas: {response_disciplinas.status_code}")
+                return []
+            
+            disciplinas = ResponseValidator.validate_list_response(response_disciplinas)
+            
+            if not disciplinas:
+                dispatcher.utter_message(text="Nao ha disciplinas cadastradas no momento.")
+                logger.info(f"[{self.name()}] Nenhuma disciplina encontrada")
+                return []
+            
+            # Criar map de disciplinas
+            for disc in disciplinas:
+                if isinstance(disc, dict):
+                    id_disc = disc.get('id_disciplina')
+                    nome_disc = disc.get('nome_disciplina')
+                    if id_disc and nome_disc:
+                        disciplinas_map[id_disc] = nome_disc
+            
+            logger.info(f"[{self.name()}] {len(disciplinas_map)} disciplina(s) encontrada(s)")
+            
+            # 2. Buscar avaliações para cada disciplina
+            total_avaliacoes = 0
+            for id_disciplina, nome_disciplina in disciplinas_map.items():
+                try:
+                    response_aval = requests.get(
+                        f"{API_URL}/avaliacao/disciplina/{id_disciplina}",
+                        timeout=10
+                    )
+                    
+                    if response_aval.ok:
+                        avaliacoes = ResponseValidator.validate_list_response(response_aval)
+                        
+                        if avaliacoes:
+                            if nome_disciplina not in avaliacoes_por_disciplina:
+                                avaliacoes_por_disciplina[nome_disciplina] = []
+                            
+                            for aval in avaliacoes:
+                                if isinstance(aval, dict):
+                                    tipo_aval = aval.get('tipo_avaliacao', '')
+                                    data_prova = aval.get('data_prova', '')
+                                    
+                                    if tipo_aval and data_prova:
+                                        data_fmt = data_prova.split('T')[0] if 'T' in data_prova else data_prova
+                                        avaliacoes_por_disciplina[nome_disciplina].append({
+                                            'tipo': tipo_aval,
+                                            'data': data_fmt
+                                        })
+                                        total_avaliacoes += 1
+                except Exception as e:
+                    logger.debug(f"[{self.name()}] Erro ao buscar avaliacoes para disciplina {nome_disciplina}: {e}")
+                    continue
+            
+            # 3. Montar mensagem
+            if avaliacoes_por_disciplina:
+                msg = "📚 **Provas Agendadas:**\n\n"
+                for disc_nome in sorted(avaliacoes_por_disciplina.keys()):
+                    msg += f"**{disc_nome}:**\n"
+                    for aval in avaliacoes_por_disciplina[disc_nome]:
+                        msg += f"  • {aval['tipo']}: {aval['data']}\n"
+                    msg += "\n"
+                
+                dispatcher.utter_message(text=msg)
+                logger.info(f"[{self.name()}] {total_avaliacoes} avaliacao(oes) listada(s) de {len(avaliacoes_por_disciplina)} disciplina(s)")
+            else:
+                dispatcher.utter_message(text="Nao ha provas agendadas no momento.")
+                logger.info(f"[{self.name()}] Nenhuma avaliacao encontrada")
+                
+        except Exception as e:
+            ErrorHandler.handle_api_error(
+                dispatcher, e,
+                context="Listar todas as provas",
+                action_name=self.name()
+            )
+        
         return []
 
 class ActionBuscarInfoAtividadeAcademica(Action):
@@ -609,7 +939,7 @@ class ActionBuscarInfoAtividadeAcademica(Action):
                     dispatcher.utter_message(text=f"Nao encontrei informacoes detalhadas sobre {atividade}.")
                     logger.info(f"[{self.name()}] Nenhuma informacao encontrada para '{atividade}'")
             else:
-            dispatcher.utter_message(text="Erro ao buscar informacoes do curso.")
+                dispatcher.utter_message(text="Erro ao buscar informacoes do curso.")
                 logger.warning(f"[{self.name()}] Resposta invalida da API para '{atividade}'")
                 
         except Exception as e:
@@ -655,12 +985,15 @@ class ActionBuscarAtendimentoDocente(Action):
                     continue
                     
                 nome = doc.get('nome_professor') or doc.get('nome_coordenador')
+                sobrenome = doc.get('sobrenome_professor') or doc.get('sobrenome_coordenador')
+                
                 if nome:
-                    nome_lower = nome.lower().strip()
+                    nome_completo = f"{nome} {sobrenome}".strip() if sobrenome else nome
+                    nome_lower = nome_completo.lower().strip()
+                    
                     # Busca mais flexível
                     if nome_docente_lower in nome_lower or nome_lower in nome_docente_lower:
                         horario = doc.get('horario_atendimento', 'Horario nao informado no cadastro.')
-                        nome_completo = doc.get('nome_professor') or doc.get('nome_coordenador')
                         dispatcher.utter_message(text=f"Atendimento {nome_completo}:\n{horario}")
                         logger.info(f"[{self.name()}] Atendimento encontrado para '{nome_completo}'")
                         return [SlotSet("nome_docente", None)] # Limpa o slot
@@ -668,7 +1001,12 @@ class ActionBuscarAtendimentoDocente(Action):
                     nome_parts = nome_lower.split()
                     if any(part == nome_docente_lower or nome_docente_lower in part for part in nome_parts):
                         horario = doc.get('horario_atendimento', 'Horario nao informado no cadastro.')
-                        nome_completo = doc.get('nome_professor') or doc.get('nome_coordenador')
+                        dispatcher.utter_message(text=f"Atendimento {nome_completo}:\n{horario}")
+                        logger.info(f"[{self.name()}] Atendimento encontrado para '{nome_completo}'")
+                        return [SlotSet("nome_docente", None)] # Limpa o slot
+                    # Verifica sobrenome separadamente
+                    if sobrenome and nome_docente_lower in sobrenome.lower():
+                        horario = doc.get('horario_atendimento', 'Horario nao informado no cadastro.')
                         dispatcher.utter_message(text=f"Atendimento {nome_completo}:\n{horario}")
                         logger.info(f"[{self.name()}] Atendimento encontrado para '{nome_completo}'")
                         return [SlotSet("nome_docente", None)] # Limpa o slot
@@ -706,61 +1044,53 @@ class ActionBuscarMaterial(Action):
         dispatcher.utter_message(text=f"Buscando materiais para {disciplina_nome}...")
 
         try:
-            # SOLUÇÃO: Usar endpoint de teste que retorna documentos com URLs
+            # SOLUÇÃO: Usar endpoint de busca de base de conhecimento e buscar URLs relacionadas
+            # Primeiro verificar se há conteúdo relacionado
             response = requests.get(
-                f"{API_URL}/ia/testar-baseconhecimento",
+                f"{API_URL}/baseconhecimento/get_buscar",
                 params={"q": disciplina_nome},
                 timeout=10
             )
-            response.raise_for_status()
             
-            # VALIDAÇÃO ADICIONADA
-            dados = ResponseValidator.validate_json_response(response)
-
-            if not dados:
-                logger.warning(f"[{self.name()}] Resposta invalida da API para '{disciplina_nome}'")
-                dispatcher.utter_message(text="Erro ao buscar documentos.")
-                return [SlotSet("disciplina", None)]
-
-            documentos_encontrados = dados.get("documentos_encontrados", 0)
-            urls_documentos = dados.get("urls_documentos", [])
+            contextos_encontrados = 0
+            if response.ok:
+                dados = ResponseValidator.validate_json_response(response)
+                if dados:
+                    contextos = dados.get("contextos", [])
+                    contextos_encontrados = len(contextos) if contextos else 0
             
-            if documentos_encontrados > 0 and urls_documentos:
-                mensagem = f"Encontrei {documentos_encontrados} documento(s) para {disciplina_nome}:\n\n"
-                for i, url in enumerate(urls_documentos[:5], 1):  # Limita a 5 documentos
-                    mensagem += f"{i}. {url}\n"
+            # Buscar URLs de documentos relacionados
+            urls_documentos = buscar_urls_documentos_relacionados(disciplina_nome, limite=5)
+            
+            if contextos_encontrados > 0 or urls_documentos:
+                mensagem = f"Encontrei material para {disciplina_nome}:\n\n"
                 
-                if documentos_encontrados > 5:
-                    mensagem += f"\n... e mais {documentos_encontrados - 5} documento(s)."
-            
-            dispatcher.utter_message(text=mensagem)
-            else:
-                # Fallback: usar busca geral
-                response_fallback = requests.get(
-                    f"{API_URL}/baseconhecimento/get_buscar",
-                    params={"q": disciplina_nome},
-                    timeout=10
-                )
-                if response_fallback.ok:
-                    dados_fallback = response_fallback.json()
-                    contextos = dados_fallback.get("contextos", [])
-                    if contextos:
-                        dispatcher.utter_message(
-                            text=f"Encontrei informacoes sobre {disciplina_nome}, mas os documentos nao estao disponiveis para download direto. "
-                                 f"Consulte o painel administrativo para acessar os arquivos."
-                        )
-                    else:
-                        dispatcher.utter_message(text=f"Nao encontrei materiais para {disciplina_nome} no sistema.")
+                if urls_documentos:
+                    mensagem += f"📄 **Documentos disponíveis:**\n"
+                    for i, url in enumerate(urls_documentos, 1):
+                        mensagem += f"{i}. {url}\n"
+                    
+                    if contextos_encontrados > 0:
+                        mensagem += f"\n💡 **Conteúdo processado encontrado:** {contextos_encontrados} trecho(s) de material."
                 else:
-                    dispatcher.utter_message(text=f"Nao encontrei materiais para {disciplina_nome} no sistema.")
-                    logger.info(f"[{self.name()}] Nenhum material encontrado para '{disciplina_nome}'")
-
+                    mensagem += f"💡 **Conteúdo processado encontrado:** {contextos_encontrados} trecho(s) de material."
+                    mensagem += "\n\n(Não há documentos com URL disponível no momento.)"
+                
+                dispatcher.utter_message(text=mensagem)
+                logger.info(f"[{self.name()}] {len(urls_documentos)} documento(s) e {contextos_encontrados} contexto(s) encontrado(s) para '{disciplina_nome}'")
+            else:
+                # Nenhum material encontrado
+                dispatcher.utter_message(text=f"Nao encontrei material disponivel para {disciplina_nome} no momento.")
+                logger.info(f"[{self.name()}] Nenhum material encontrado para '{disciplina_nome}'")
+                return [SlotSet("disciplina", None)]
+                
         except Exception as e:
             ErrorHandler.handle_api_error(
                 dispatcher, e,
-                context=f"Buscar materiais - disciplina {disciplina_nome}",
+                context=f"Buscar material - disciplina {disciplina_nome}",
                 action_name=self.name()
             )
+            return [SlotSet("disciplina", None)]
         
         # Limpa o slot para a proxima pergunta
         return [SlotSet("disciplina", None)]
@@ -794,23 +1124,37 @@ class ActionBuscarInfoDocente(Action):
             nome_docente_lower = nome_docente.lower().strip()
             
             for doc in todos:
+                if not isinstance(doc, dict):
+                    logger.warning(f"[{self.name()}] Item de docente nao e dict: {type(doc)}")
+                    continue
+                    
                 nome = doc.get('nome_professor') or doc.get('nome_coordenador')
+                sobrenome = doc.get('sobrenome_professor') or doc.get('sobrenome_coordenador')
+                
                 if nome:
-                    nome_lower = nome.lower().strip()
+                    nome_completo = f"{nome} {sobrenome}".strip() if sobrenome else nome
+                    nome_lower = nome_completo.lower().strip()
+                    
                     # Busca mais flexível: verifica se o nome fornecido está no nome completo
                     # ou se o nome completo está no nome fornecido (para apelidos)
                     if nome_docente_lower in nome_lower or nome_lower in nome_docente_lower:
                         encontrado = doc
                         break
-                    # Também verifica palavras individuais (ex: "Alvaro" em "Álvaro Prado")
+                    # Também verifica palavras individuais (ex: "Alvaro" em "Álvaro Prado", "Magrini" em "Luiz Magrini")
                     nome_parts = nome_lower.split()
                     if any(part == nome_docente_lower or nome_docente_lower in part for part in nome_parts):
-                    encontrado = doc
-                    break
+                        encontrado = doc
+                        break
+                    # Verifica sobrenome separadamente
+                    if sobrenome and nome_docente_lower in sobrenome.lower():
+                        encontrado = doc
+                        break
             
             if encontrado:
                 email = encontrado.get('email_institucional', 'Nao informado')
-                nome_completo = encontrado.get('nome_professor') or encontrado.get('nome_coordenador')
+                nome = encontrado.get('nome_professor') or encontrado.get('nome_coordenador')
+                sobrenome = encontrado.get('sobrenome_professor') or encontrado.get('sobrenome_coordenador')
+                nome_completo = f"{nome} {sobrenome}".strip() if sobrenome else nome
                 dispatcher.utter_message(text=f"Contato Docente\nNome: {nome_completo}\nEmail: {email}")
             else:
                 dispatcher.utter_message(text=f"Nao encontrei o professor(a) {nome_docente} no cadastro.")

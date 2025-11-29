@@ -48,6 +48,10 @@ nlu:
 - intent: consultar_data_avaliacao
   examples: |
     - quando e a [NP1]{"entity": "tipo_avaliacao"} de [engenharia de software]{"entity": "disciplina"}
+    - quando e a [NP1]{"entity": "tipo_avaliacao"} de [Qualidade de Software]{"entity": "disciplina"}
+    - quando e a [NP1]{"entity": "tipo_avaliacao"} de [Sistemas Distribuidos]{"entity": "disciplina"}
+    - quando e a [NP1]{"entity": "tipo_avaliacao"} de [Empreendedorismo]{"entity": "disciplina"}
+    - quando e a [NP1]{"entity": "tipo_avaliacao"} de [Compiladores e Computabilidade]{"entity": "disciplina"}
     - data da prova de [SD]{"entity": "disciplina"}
     - quando e a [np1]{"entity": "tipo_avaliacao"} de [ES]{"entity": "disciplina"}
     - data da [prova 1]{"entity": "tipo_avaliacao"} de [engenharia]{"entity": "disciplina"}
@@ -61,6 +65,20 @@ nlu:
     - data [prova substitutiva]{"entity": "tipo_avaliacao"} de [sistemas distribuidos]{"entity": "disciplina"}
     - quando e a prova de [sistemas distribuidos]{"entity": "disciplina"}
     - qual a data da prova de [engenharia de software]{"entity": "disciplina"}
+    - qual o dia da [avaliacao]{"entity": "tipo_avaliacao"} de [Sistemas Distribuidos]{"entity": "disciplina"}
+    - qual o dia da [avaliacao]{"entity": "tipo_avaliacao"} de [sistemas distribuidos]{"entity": "disciplina"}
+    - qual a data da [avaliacao]{"entity": "tipo_avaliacao"} de [Qualidade de Software]{"entity": "disciplina"}
+    - quando e a [avaliacao]{"entity": "tipo_avaliacao"} de [Empreendedorismo]{"entity": "disciplina"}
+    - data da [avaliacao]{"entity": "tipo_avaliacao"} de [Compiladores e Computabilidade]{"entity": "disciplina"}
+    - quando e a [avaliacao]{"entity": "tipo_avaliacao"} de [Orientacao de Estagio]{"entity": "disciplina"}
+    - quais sao as provas que vao ter
+    - quais sao as provas agendadas
+    - lista todas as provas
+    - quais provas estao marcadas
+    - lista de avaliacoes
+    - quais avaliacoes tem
+    - todas as provas
+    - provas marcadas
 
 - intent: consultar_horario_aula
   examples: |
@@ -69,6 +87,10 @@ nlu:
     - que dia e a aula de [Banco de Dados]{"entity": "disciplina"}
     - horario da aula de [Cloud Computing]{"entity": "disciplina"}
     - quando e a aula de [Sistemas Distribuidos]{"entity": "disciplina"}
+    - quando e a aula de [Empreendedorismo]{"entity": "disciplina"}
+    - quando e a aula de [Orientacao de Estagio]{"entity": "disciplina"}
+    - quando e a aula de [Topicos de Atuacao Profissional]{"entity": "disciplina"}
+    - quando e a aula de [Compiladores e Computabilidade]{"entity": "disciplina"}
     - qual o horario de [Qualidade de Software]{"entity": "disciplina"}
     - que horas comeca [Inteligencia Artificial]{"entity": "disciplina"}
     - que horas e a aula de [Sistemas Distribuidos]{"entity": "disciplina"}
@@ -76,6 +98,9 @@ nlu:
     - quando e a aula de [qualidade de software]{"entity": "disciplina"}
     - horario de [sistemas distribuidos]{"entity": "disciplina"}
     - que horas comeca a aula de [engenharia de software]{"entity": "disciplina"}
+    - que horas e a aula de [empreendedorismo]{"entity": "disciplina"}
+    - qual o horario de [empreendedorismo]{"entity": "disciplina"}
+    - que horas e a aula de [compiladores]{"entity": "disciplina"}
 
 - intent: consultar_regras_aps
   examples: |
@@ -227,6 +252,12 @@ nlu:
     - Compiladores e Computabilidade
     - Desenvolvimento de Sistemas Distribuídos
     - Empreendedorismo
+    - Orientação de Estágio
+    - Orientacao de Estagio
+    - Tópicos de Atuação Profissional
+    - Topicos de Atuacao Profissional
+    - Topicos de Atuacao Profissional - CC
+    - Trabalho de Curso II
     - Análise de Algoritmos
     - Sistemas Distribuídos
     - Engenharia de Software
@@ -257,6 +288,10 @@ nlu:
     - exame
     - substitutiva
     - sub
+    - avaliacao
+    - avaliação
+    - prova
+    - provas
 
 - lookup: nome_docente
   examples: |
@@ -396,20 +431,68 @@ nlu:
     - redes
     - redes de computadores
 
+# --- DISCIPLINA: Empreendedorismo ---
+- synonym: Empreendedorismo
+  examples: |
+    - empreendedorismo
+    - Empreendedorismo
+
+# --- DISCIPLINA: Orientação de Estágio ---
+- synonym: Orientação de Estágio
+  examples: |
+    - Orientacao de Estagio
+    - orientacao de estagio
+    - Orientacao de Estagio
+    - estagio
+    - orientacao
+
+# --- DISCIPLINA: Tópicos de Atuação Profissional ---
+- synonym: Tópicos de Atuação Profissional - CC
+  examples: |
+    - Topicos de Atuacao Profissional
+    - topicos de atuacao profissional
+    - topicos
+
+# --- DISCIPLINA: Compiladores e Computabilidade ---
+- synonym: Compiladores e Computabilidade
+  examples: |
+    - compiladores
+    - Compiladores
+    - compiladores e computabilidade
+
 # --- PROFESSOR: Álvaro Prado ---
 - synonym: Álvaro Prado
   examples: |
     - Alvaro
     - prof Alvaro
     - Professor Álvaro
+    - Alvaro Prado
 
-# --- PROFESSOR: Myriam Moraes ---
-- synonym: Myriam Moraes
+# --- PROFESSOR: Luiz Magrini ---
+- synonym: Luiz Magrini
+  examples: |
+    - Magrini
+    - Luiz
+    - prof Magrini
+    - Professor Magrini
+    - Luiz Magrini
+
+# --- PROFESSOR: Miryam Moraes ---
+- synonym: Miryam Moraes
   examples: |
     - Myriam
-    - Myrian
+    - Miryam
+    - Myriam Moraes
     - prof Myriam
     - Professora Myriam
+
+# --- PROFESSOR: Arthur Battaglia ---
+- synonym: Arthur Battaglia
+  examples: |
+    - Arthur
+    - Battaglia
+    - prof Arthur
+    - Professor Arthur
 
 # --- PROFESSOR: Hugo Insua ---
 - synonym: Hugo Insua

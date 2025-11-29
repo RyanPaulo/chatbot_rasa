@@ -70,6 +70,7 @@ actions:
   - action_buscar_ultimos_avisos
   - action_buscar_cronograma
   - action_buscar_data_avaliacao
+  - action_listar_todas_provas
   - action_buscar_info_docente
   - action_buscar_info_atividade_academica
   - action_gerar_resposta_com_ia

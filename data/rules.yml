@@ -71,6 +71,11 @@ rules:
     - disciplina: true
   - action: action_buscar_data_avaliacao
 
+- rule: Consultar data avaliacao (sem disciplina - action decide)
+  steps:
+  - intent: consultar_data_avaliacao
+  - action: action_buscar_data_avaliacao
+
 - rule: Buscar info docente quando nome fornecido
   steps:
   - intent: solicitar_info_docente
